@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: ec2-spot-termination-simulator
+  name: spot-term-simulator
+spec:
+  selector:
+    matchLabels:
+      app: ec2-spot-termination-simulator
+  template:
+    metadata:
+      labels:
+        app: ec2-spot-termination-simulator
+    spec:
+      nodeSelector:
+        lifecycle: Ec2Spot
+      tolerations:
+      - key: "spotInstance"
+        operator: "Equal"
+        value: "true"
+        effect: "PreferNoSchedule"       
+      containers:
+      - image: shoganator/ec2-spot-termination-simulator:1.0.1
+        imagePullPolicy: Always
+        name: spot-term-simulator
+        env:
+        - name: PORT
+          value: "80"
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: spot-term-simulator
+  name: ec2-spot-termination-simulator
+spec:
+  ports:
+  - name: http
+    port: 8082
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ec2-spot-termination-simulator
+  sessionAffinity: None
+  type: NodePort

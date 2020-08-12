@@ -1,0 +1,26 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eks-on-spot # must match CLUSTER_NAME
+  region: cn-northwest-1 # must match AWS_REGION
+nodeGroups:
+  - name: ng-spot
+    labels:
+      lifecycle: Ec2Spot
+    taints:
+      spotInstance: true:PreferNoSchedule
+    minSize: 2
+    maxSize: 5
+    ssh:
+      allow: true
+    instancesDistribution: 
+      instanceTypes:
+        - m5.large
+        - m4.large
+        - m5d.large
+        - m5a.large
+        - t3.large
+        - t3a.large        
+      onDemandBaseCapacity: 0
+      onDemandPercentageAboveBaseCapacity: 0 # all the instances will be Spot Instances
+      spotAllocationStrategy: capacity-optimized # launch Spot Instances from the most availably Spot Instance pools
